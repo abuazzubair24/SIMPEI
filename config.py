@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv("8954278422:AAHYJgZHWc5I9ayjYQ9hIVbDgqjcHCrTnhk")
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 ADMIN_CHAT_ID = 8232681390
 

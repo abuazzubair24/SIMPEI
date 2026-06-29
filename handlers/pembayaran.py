@@ -1,46 +1,56 @@
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    CallbackQueryHandler,
-    filters,
-)
+from telegram import Update
+from telegram.ext import ContextTypes
 
-from config import TOKEN
-from handlers.start import start
-from handlers.menu import menu
-from handlers.pembayaran import bukti_transfer
-from handlers.approval import approve_callback, reject_callback
+from config import ADMIN_CHAT_ID
+from database import simpan_pembayaran
 
 
-app = Application.builder().token(TOKEN).build()
+async def bukti_transfer(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-# Command
-app.add_handler(CommandHandler("start", start))
+    if not context.user_data.get("menunggu_bukti"):
+        return
 
-# Menu
-app.add_handler(
-    MessageHandler(
-        filters.TEXT & ~filters.COMMAND,
-        menu
+    user = update.effective_user
+    caption = update.message.caption or ""
+    nama = caption.replace("Nama :", "").replace("Nama:", "").strip() or user.full_name
+
+    photo = update.message.photo[-1]
+    file_id = photo.file_id
+
+    pembayaran_id = simpan_pembayaran(
+        chat_id=user.id,
+        nama=nama,
+        file_id=file_id,
     )
-)
 
-# Foto bukti transfer
-app.add_handler(
-    MessageHandler(
-        filters.PHOTO,
-        bukti_transfer
+    context.user_data["menunggu_bukti"] = False
+
+    await update.message.reply_text(
+        f"✅ Bukti transfer diterima!\n\n"
+        f"Nama: *{nama}*\n"
+        f"ID: `{pembayaran_id}`\n\n"
+        f"Admin akan memverifikasi segera. Terima kasih!",
+        parse_mode="Markdown"
     )
-)
 
-# Approval callbacks (BARU)
-app.add_handler(CallbackQueryHandler(approve_callback, pattern="^approve_"))
-app.add_handler(CallbackQueryHandler(reject_callback, pattern="^reject_"))
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-print("=" * 40)
-print("SIMPEI v2.0")
-print("Bot sedang berjalan...")
-print("=" * 40)
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Approve", callback_data=f"approve_{pembayaran_id}"),
+            InlineKeyboardButton("❌ Reject", callback_data=f"reject_{pembayaran_id}"),
+        ]
+    ])
 
-app.run_polling()
+    await context.bot.send_photo(
+        chat_id=ADMIN_CHAT_ID,
+        photo=file_id,
+        caption=(
+            f"📥 *BUKTI PEMBAYARAN*\n\n"
+            f"🆔 ID: {pembayaran_id}\n"
+            f"👤 Nama: {nama}\n"
+            f"💬 Chat ID: {user.id}"
+        ),
+        parse_mode="Markdown",
+        reply_markup=keyboard
+    )

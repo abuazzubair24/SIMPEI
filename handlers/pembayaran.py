@@ -1,32 +1,46 @@
-from telegram import Update
-from telegram.ext import ContextTypes
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    filters,
+)
 
-from config import ADMIN_CHAT_ID
+from config import TOKEN
+from handlers.start import start
+from handlers.menu import menu
+from handlers.pembayaran import bukti_transfer
+from handlers.approval import approve_callback, reject_callback
 
 
-async def bukti_transfer(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message.photo:
-        return
+app = Application.builder().token(TOKEN).build()
 
-    user = update.effective_user
-    photo = update.message.photo[-1].file_id
+# Command
+app.add_handler(CommandHandler("start", start))
 
-    await context.bot.send_photo(
-        chat_id=ADMIN_CHAT_ID,
-        photo=photo,
-        caption=(
-            f"📥 BUKTI PEMBAYARAN\n\n"
-            f"👤 Nama : {user.full_name}\n"
-            f"📱 Username : @{user.username if user.username else '-'}\n"
-            f"🆔 Chat ID : {user.id}"
-        ),
+# Menu
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        menu
     )
+)
 
-    await update.message.reply_text(
-        "✅ *Bukti transfer berhasil dikirim.*\n\n"
-        "Jazakumullahu khairan atas kepercayaan Ayah/Bunda yang telah berpartisipasi dalam mendukung *Indah Siar Kids*.\n\n"
-        "Semoga Allah ﷻ membalas setiap kebaikan Ayah/Bunda dengan pahala yang berlipat ganda, melapangkan rezeki, serta menjadikannya sebagai amal jariyah.\n\n"
-        "InsyaAllah dana yang terkumpul akan digunakan untuk mendukung keberlangsungan Channel *Indah Siar Kids* agar terus memberikan manfaat bagi umat.\n\n"
-        "_Barakallahu fiikum._ 🤲",
-        parse_mode="Markdown",
+# Foto bukti transfer
+app.add_handler(
+    MessageHandler(
+        filters.PHOTO,
+        bukti_transfer
     )
+)
+
+# Approval callbacks (BARU)
+app.add_handler(CallbackQueryHandler(approve_callback, pattern="^approve_"))
+app.add_handler(CallbackQueryHandler(reject_callback, pattern="^reject_"))
+
+print("=" * 40)
+print("SIMPEI v2.0")
+print("Bot sedang berjalan...")
+print("=" * 40)
+
+app.run_polling()

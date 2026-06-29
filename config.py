@@ -1,8 +1,9 @@
-# ===========================
-# SIMPEI CONFIG
-# ===========================
+import os
+from dotenv import load_dotenv
 
-TOKEN = "8954278422:AAHS0BjrbHVvf6ITZUjwhmsEyqzrNEGPJlc"
+load_dotenv()
+
+TOKEN = os.getenv("8954278422:AAHYJgZHWc5I9ayjYQ9hIVbDgqjcHCrTnhk")
 
 ADMIN_CHAT_ID = 8232681390
 

@@ -99,7 +99,7 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # HUBUNGI ADMIN
     # ==========================
 
-    elif text == "☎ Hubungi Admin":
+    elif text == "☎️ Hubungi Admin":
 
         await update.message.reply_text(
             f"*☎ Hubungi Admin*\n\n"

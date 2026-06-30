@@ -17,11 +17,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     keyboard = [
-    ["📚 Edisi Terbaru"],
-    ["💳 Bayar Iuran", "📄 Cara Pembayaran"],
-    ["📤 Kirim Bukti Transfer"],
-    ["☎️ Hubungi Admin"]
-]
+        ["📚 Edisi Terbaru"],
+        ["💳 Bayar Iuran", "📄 Cara Pembayaran"],
+        ["📤 Kirim Bukti Transfer"],
+        ["☎️ Hubungi Admin"]
+    ]
 
     await update.message.reply_text(
         "Assalamu'alaikum warahmatullahi wabarakatuh.\n\n"
